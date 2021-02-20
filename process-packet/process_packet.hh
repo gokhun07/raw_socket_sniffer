@@ -31,7 +31,7 @@
 #define ETHER_TYPE_CHECK_IP(x) (bool) (((x.at(0)<<8) + (x.at(1))) == 0x0800)
 
 enum class PROTOCOL_HEADER {
-
+    NO_PROTO,
     ICMP, 
     IGMP,
     IP,
@@ -53,15 +53,17 @@ class process_packet
         
     public: 
 
-        bool check_frame(const unsigned  char *buf, std::size_t size);
+        PROTOCOL_HEADER check_frame(const unsigned  char *buf, std::size_t size);
         
-    /*private variables*/
-    private: 
+    /*public variables*/
+    public: 
         PROTOCOL_HEADER frame_header;
         std::vector<unsigned char> source_MAC; 
         std::vector<unsigned char> destination_MAC; 
         std::vector<unsigned char> payload; 
         std::vector<unsigned char> eth_type; 
+        std::vector<unsigned char> source_IP; 
+        std::vector<unsigned char> destination_IP;
 
         
 

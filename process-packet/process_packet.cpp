@@ -14,19 +14,8 @@
 #include <string>
 #include <algorithm> 
 
-extern void process_ip_packets(const char *buf, std::size_t size);
-/**
- * @brief 
- * 
- * @param buf 
- * @param size 
- */
-void process_received_packet(const unsigned char *buf, std::size_t size)
-{
-    process_packet packet_obj(buf, size);
-    packet_obj.check_frame((const unsigned char*)buf, size); 
-}
-
+extern PROTOCOL_HEADER get_ip_protocol(const char *buf, std::size_t size);
+extern void get_source_and_target_ip(const char *buf, std::size_t size, std::vector<unsigned char>& src,std::vector<unsigned char> &dest);
 /**
  * @brief 
  * 
@@ -35,22 +24,30 @@ void process_received_packet(const unsigned char *buf, std::size_t size)
  * @return true 
  * @return false 
  */
-bool process_packet::check_frame(const unsigned char *buf, std::size_t size)
+PROTOCOL_HEADER process_packet::check_frame(const unsigned char *buf, std::size_t size)
 {
+    PROTOCOL_HEADER protocol;
 
     if (!check_frame_header(buf, size)) {   
         print_error("Frame Header Corrupted");
-        return (false);
+        return (PROTOCOL_HEADER::NO_PROTO);
     }
 
     // IP Packet 0x0800
     if((ETHER_TYPE_CHECK_IP(eth_type)))
     {
+        std::vector<unsigned char> src_ip; 
+        std::vector<unsigned char> dest_ip; 
+
         frame_header = PROTOCOL_HEADER::IP;
         print_chat("received packet is an IP packet");
-        process_ip_packets((const char *)(buf+14), size - 14);
-    }
-    return true;
+        protocol = get_ip_protocol((const char *)(buf+14), size - 14);
+        
+        get_source_and_target_ip((const char *)(buf+14), size - 14,source_IP,destination_IP);
+
+    } 
+    
+    return protocol;
 }
 
 /**
